@@ -1,7 +1,10 @@
 <template>
   <div class="home">
     <div class="container">
-        <button type="button" class="btn btn-lg btn-success"><i class="fab fa-spotify"></i>&nbsp;Can't do much without logging in with Spotify...</button>
+      <a
+        href="https://accounts.spotify.com/authorize?client_id=2383a36b5aaa4b1d9ba46fd3383f0b56&response_type=code&redirect_uri=http://localhost:8080/callback&scope=playlist-read-collaborative"><button
+          type="button" class="btn btn-lg btn-success"><i class="fab fa-spotify"></i>&nbsp;Log in with
+          Spotify</button></a>
     </div>
   </div>
 </template>
@@ -22,16 +25,12 @@
   }
 </style>
 
-<script lang="ts">
-  import {
-    defineComponent
-  } from 'vue';
-  import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+<script>
 
-  export default defineComponent({
+  export default {
     name: 'Home',
     components: {
-      HelloWorld,
+      //HelloWorld,
     },
-  });
+  };
 </script>
