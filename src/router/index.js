@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Callback from '../views/Callback.vue'
+import Year from '../views/Year.vue'
 
 const routes = [
   {
@@ -20,6 +21,11 @@ const routes = [
     path: '/callback',
     name: 'Callback',
     component: Callback
+  },
+  {
+    path: '/year',
+    name: 'Year',
+    component: Year
   }
 ]
 
