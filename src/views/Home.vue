@@ -32,24 +32,30 @@
     },
     data() {
       return {
-        request: ``
+        request: `https://accounts.spotify.com/authorize?client_id=${process.env.VUE_APP_CLIENTID}&response_type=code&redirect_uri=${process.env.VUE_APP_REDIRECTURI}&scope=user-top-read&state=${this.generateState(128)}` //%20user-read-email
       }
     },
     mounted() {
-      this.request = `https://accounts.spotify.com/authorize?client_id=${process.env.VUE_APP_CLIENTID}&response_type=code&redirect_uri=${process.env.VUE_APP_REDIRECTURI}&scope=user-top-read` //%20user-read-email
+      
     },
     methods: {
       // Use this when you want to use 'state' on oauth
-      // generateState(length) {
-      //   let result = '';
-      //   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      //   let charactersLength = characters.length;
-      //   for (let i = 0; i < length; i++) {
-      //     result += characters.charAt(Math.floor(Math.random() *
-      //       charactersLength));
-      //   }
-      //   return result;
-      // }
+      // who doesn't like an extra layer of security anyways?
+      generateState(length) {
+        const crypto = require('crypto')
+
+        let result = '';
+        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-!&+%?*/.;,:<>^${[]}()_|=';
+        let charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+        }
+
+        let hashed = crypto.createHash('sha1').update(result).digest('hex');
+        sessionStorage.setItem('state', hashed);
+        return hashed;
+      }
     },
   };
 </script>

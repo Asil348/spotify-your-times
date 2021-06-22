@@ -1,37 +1,42 @@
 <template>
 	<div class="callback">
 		<div class="container">
-			<div class="card">
-				<div class="card-body">
-					<h5 class="card-title">Gotcha, what do you need?</h5>
-					<form @submit="onSubmit">
-						<div class="mb-3">
-							<p class="card-text">Get your top tracks of...</p>
-							<div class="form-check">
-								<input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1"
-									value="short_term" v-model="selection">
-								<label class="form-check-label" for="flexRadioDefault1">
-									this month
-								</label>
+			<div v-if="stateCheck == true">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Gotcha, what do you need?</h5>
+						<form @submit="onSubmit">
+							<div class="mb-3">
+								<p class="card-text">Get your top tracks of...</p>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="flexRadioDefault"
+										id="flexRadioDefault1" value="short_term" v-model="selection">
+									<label class="form-check-label" for="flexRadioDefault1">
+										this month
+									</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="flexRadioDefault"
+										id="flexRadioDefault2" value="medium_term" v-model="selection">
+									<label class="form-check-label" for="flexRadioDefault2">
+										the last 6 months
+									</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="flexRadioDefault"
+										id="flexRadioDefault3" value="long_term" v-model="selection">
+									<label class="form-check-label" for="flexRadioDefault3">
+										all-time
+									</label>
+								</div>
 							</div>
-							<div class="form-check">
-								<input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2"
-									value="medium_term" v-model="selection">
-								<label class="form-check-label" for="flexRadioDefault2">
-									the last 6 months
-								</label>
-							</div>
-							<div class="form-check">
-								<input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault3"
-									value="long_term" v-model="selection">
-								<label class="form-check-label" for="flexRadioDefault3">
-									all-time
-								</label>
-							</div>
-						</div>
-						<button type="submit" class="btn btn-primary next">{{ loading || "Next" }}</button>
-					</form>
+							<button type="submit" class="btn btn-primary next">{{ loading || "Next" }}</button>
+						</form>
+					</div>
 				</div>
+			</div>
+			<div v-else>
+				<h1 class="text-light">State check failed. Please try again later.</h1>
 			</div>
 		</div>
 	</div>
@@ -65,7 +70,8 @@
 			return {
 				TOKEN: "", // access token
 				selection: "", // selection made in the ui, ('short_term', 'medium_term', or 'long_term')
-				loading: "" // button value
+				loading: "", // button value
+				stateCheck: true
 			}
 		},
 		mounted() {
@@ -80,6 +86,14 @@
 				}).catch(e => {
 					console.error(e.stack)
 				})
+			
+			if (this.$route.query.state == sessionStorage.getItem('state')) {
+				this.stateCheck = true;
+			} else {
+				this.stateCheck = false;
+			}
+			
+			sessionStorage.removeItem('state');
 			window.history.pushState('', '', '/callback') // who likes a dirty address bar anyways?
 		},
 		methods: {
@@ -116,7 +130,7 @@
 						collectYears();
 
 						///////// HERE //////////
-						
+
 						// function collectGenres() {
 
 						// }
@@ -126,7 +140,8 @@
 							for (let i = 0; i < state.topYears.length; i++) { // for every year in the array 'topYears'
 
 								state.topYearTracks[`year${state.topYears[i]}`] = []
-								for (let j = 0; j < response.data.items.length; j++) { // for every track in the array 'items'
+								for (let j = 0; j < response.data.items
+									.length; j++) { // for every track in the array 'items'
 
 									let itemYear = response.data.items[j].album.release_date.substring(0, 4)
 									if (itemYear === state.topYears[i]) {
