@@ -71,7 +71,7 @@
 				TOKEN: "", // access token
 				selection: "", // selection made in the ui, ('short_term', 'medium_term', or 'long_term')
 				loading: "", // button value
-				stateCheck: true
+				stateCheck: false
 			}
 		},
 		mounted() {
