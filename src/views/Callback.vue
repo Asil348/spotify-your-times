@@ -9,22 +9,22 @@
 							<div class="mb-3">
 								<p class="card-text">Get your top tracks of...</p>
 								<div class="form-check">
-									<input class="form-check-input" type="radio" name="flexRadioDefault"
-										id="flexRadioDefault1" value="short_term" v-model="selection">
+									<input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1"
+										value="short_term" v-model="selection">
 									<label class="form-check-label" for="flexRadioDefault1">
 										this month
 									</label>
 								</div>
 								<div class="form-check">
-									<input class="form-check-input" type="radio" name="flexRadioDefault"
-										id="flexRadioDefault2" value="medium_term" v-model="selection">
+									<input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2"
+										value="medium_term" v-model="selection">
 									<label class="form-check-label" for="flexRadioDefault2">
 										the last 6 months
 									</label>
 								</div>
 								<div class="form-check">
-									<input class="form-check-input" type="radio" name="flexRadioDefault"
-										id="flexRadioDefault3" value="long_term" v-model="selection">
+									<input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault3"
+										value="long_term" v-model="selection">
 									<label class="form-check-label" for="flexRadioDefault3">
 										all-time
 									</label>
@@ -86,13 +86,13 @@
 				}).catch(e => {
 					console.error(e.stack)
 				})
-			
+
 			if (this.$route.query.state == sessionStorage.getItem('state')) {
 				this.stateCheck = true;
 			} else {
 				this.stateCheck = false;
 			}
-			
+
 			sessionStorage.removeItem('state');
 			window.history.pushState('', '', '/callback') // who likes a dirty address bar anyways?
 		},
@@ -118,37 +118,71 @@
 					.then(function (response) {
 						let rawYears = [] // years array with *most likely* duplicate years in it
 
+						state.topTracks = response.data.items
+
 						function collectYears() {
-							for (let i = 0; i < response.data.items.length; i++) {
-								let releaseYear = response.data.items[i].album.release_date.substring(0,
+							for (let i = 0; i < state.topTracks.length; i++) {
+
+								let releaseYear = state.topTracks[i].album.release_date.substring(0,
 									4); // raw year format is YYYY-MM-DD (i think?) so, we just need the first 4 chars
 								rawYears.push(releaseYear)
+								
+								state.topTracks[i].year = releaseYear;
 
 								state.topYears = [...new Set(rawYears)]; // years array WITHOUT the duplicate years
 							}
 						}
-						collectYears();
+						collectYears()
 
-						///////// HERE //////////
+						let rawGenres = []
 
-						// function collectGenres() {
+						function collectGenres() {
 
-						// }
+							state.topTracks.forEach(topTrack => {
+								let artistId = topTrack.artists[0].id
+								topTrack.genres = [];
+
+								axios({
+										method: 'GET',
+										url: `https://api.spotify.com/v1/artists/${artistId}`,
+										headers: {
+											'Accept': 'application/json',
+											'Content-Type': 'application/json',
+											'Authorization': 'Bearer ' + token
+										}
+									})
+									.then(r => {
+										topTrack.genres = topTrack.genres.concat(r.data.genres)
+
+										r.data.genres.forEach(genre => {
+											rawGenres.push(genre)
+
+										});
+										state.topGenres = state.topGenres.concat(rawGenres)
+
+									})
+									.catch(e => {
+										console.error(e.stack)
+									})
+							});
+						}
+						collectGenres()
 
 						function correspondingYearsTracks() {
 
 							for (let i = 0; i < state.topYears.length; i++) { // for every year in the array 'topYears'
 
 								state.topYearTracks[`year${state.topYears[i]}`] = []
-								for (let j = 0; j < response.data.items
+								for (let j = 0; j < state.topTracks
 									.length; j++) { // for every track in the array 'items'
 
-									let itemYear = response.data.items[j].album.release_date.substring(0, 4)
+									let itemYear = state.topTracks[j].album.release_date.substring(0, 4)
 									if (itemYear === state.topYears[i]) {
-										state.topYearTracks[`year${state.topYears[i]}`].push(response.data.items[j]);
+										state.topYearTracks[`year${state.topYears[i]}`].push(state.topTracks[j]);
 									}
 								}
 							}
+
 							// Sort
 							state.topYearTracks = Object.keys(state.topYearTracks).sort().reduce(
 								(obj, key) => {
@@ -160,6 +194,19 @@
 						correspondingYearsTracks()
 
 						console.log(state.topYearTracks)
+
+						console.log(rawYears)
+						console.log(state.topYears)
+						console.log(state.topTracks)
+
+						////////////////// YOU'RE HERE ////////////////// (i know this is a bad way to keep track of stuff but i will improve i promise)
+
+						// figure out why rawGenres array is empty
+						state.topGenres = [...new Set(rawGenres)];
+						console.log(rawGenres[0])
+						console.log(state.topGenres)
+						//console.log(state.topGenres)
+
 						// this.$router.push({
 						// 	path: 'year',
 						// 	query: {
@@ -169,7 +216,7 @@
 						// })
 					})
 					.catch(function (error) {
-						console.log(error);
+						console.log(error.stack);
 					});
 
 			}
